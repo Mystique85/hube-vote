@@ -7,7 +7,7 @@ import React from 'react'
 
 const queryClient = new QueryClient()
 
-const projectId = import.meta.env.VITE_APPKIT_PROJECT_ID || '3e0b3fbd7441c05e8e0341db43652167'
+const projectId = import.meta.env.VITE_APPKIT_PROJECT_ID
 
 const metadata = {
   name: 'HUB Vote',
@@ -51,7 +51,3 @@ export function AppKitProvider({ children }: { children: React.ReactNode }) {
     </WagmiProvider>
   )
 }
-
-console.log('🔧 AppKit Module loaded')
-console.log('🔧 Project ID:', projectId)
-console.log('🔧 Networks:', [celo, base])
