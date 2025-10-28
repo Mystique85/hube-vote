@@ -5,34 +5,26 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { celo, base } from '@reown/appkit/networks'
 import React from 'react'
 
-// Setup queryClient
 const queryClient = new QueryClient()
 
-// Project ID z .env
 const projectId = import.meta.env.VITE_APPKIT_PROJECT_ID || '3e0b3fbd7441c05e8e0341db43652167'
 
-// Metadata
 const metadata = {
   name: 'HUB Vote',
   description: 'Decentralized Voting Platform',
-  url: import.meta.env.VITE_APP_URL || 'https://hub-vote.vercel.app',
+  url: import.meta.env.VITE_APP_URL || 'https://hube-vote.vercel.app',
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
-// Networks
-const networks = [celo, base]
-
-// Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: [celo, base] as [typeof celo, ...typeof base[]],
   projectId,
   ssr: false
 })
 
-// Create AppKit
 createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks: [celo, base] as [typeof celo, ...typeof base[]],
   projectId,
   metadata,
   features: {
@@ -40,7 +32,6 @@ createAppKit({
   }
 })
 
-// Custom hook with Wagmi
 import { useAppKit as useAppKitOriginal } from '@reown/appkit/react'
 
 export function useAppKit() {
@@ -51,7 +42,6 @@ export function useAppKit() {
   return { isConnected, address, open, close, disconnect }
 }
 
-// Provider component
 export function AppKitProvider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
@@ -64,4 +54,4 @@ export function AppKitProvider({ children }: { children: React.ReactNode }) {
 
 console.log('🔧 AppKit Module loaded')
 console.log('🔧 Project ID:', projectId)
-console.log('🔧 Networks:', networks)
+console.log('🔧 Networks:', [celo, base])
