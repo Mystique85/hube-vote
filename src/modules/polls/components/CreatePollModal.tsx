@@ -9,18 +9,16 @@ interface CreatePollModalProps {
 }
 
 export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
-  const { createPoll, isCreatingPoll, createPollHash } = useVoteContract();
+  const { createPoll, isCreatingPoll } = useVoteContract();
   const [title, setTitle] = useState('');
   const [options, setOptions] = useState(['', '']);
   const [currentStep, setCurrentStep] = useState<'form' | 'confirming' | 'success'>('form');
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | null>(null);
 
-  // Śledzenie potwierdzenia transakcji
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash: transactionHash as `0x${string}`,
   });
 
-  // Reset stanu kiedy modal się otwiera
   useEffect(() => {
     if (isOpen) {
       setCurrentStep('form');
@@ -28,19 +26,16 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
     }
   }, [isOpen]);
 
-  // Automatyczne przejście do sukcesu po potwierdzeniu
   useEffect(() => {
     if (isConfirmed && transactionHash) {
       debugLogger.walletDebug.transactionStatus(transactionHash, 'success', 'createPoll');
-      console.log(`✅ Transakcja potwierdzona! Ankieta utworzona`);
+      console.log(`✅ Transaction confirmed! Poll created`);
       setCurrentStep('success');
       
-      // Automatyczne odświeżenie po 1.5 sekundy
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('pollCreated'));
       }, 1500);
       
-      // Automatyczne zamknięcie po 3 sekundach
       setTimeout(() => {
         handleClose();
       }, 3000);
@@ -51,32 +46,31 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
     e.preventDefault();
     
     if (title.trim().length === 0) {
-      alert('Proszę wprowadzić tytuł ankiety');
+      alert('Please enter a poll title');
       return;
     }
 
     const validOptions = options.filter(opt => opt.trim().length > 0);
     if (validOptions.length < 2) {
-      alert('Ankieta musi mieć przynajmniej 2 opcje');
+      alert('Poll must have at least 2 options');
       return;
     }
 
     try {
       setCurrentStep('confirming');
-      debugLogger.contractDebug.contractCall('createPoll', [title, validOptions]);
       
       const hash = await createPoll(title, validOptions);
       
       if (hash) {
         setTransactionHash(hash);
         debugLogger.walletDebug.transactionStatus(hash, 'pending', 'createPoll');
-        console.log(`⏳ Transakcja wysłana: ${hash}`);
+        console.log(`⏳ Transaction sent: ${hash}`);
       } else {
-        throw new Error('Brak hash transakcji');
+        throw new Error('No transaction hash');
       }
     } catch (error) {
       debugLogger.pollDebug.creationError(error, 'current-user');
-      alert('Błąd podczas tworzenia ankiety: ' + (error as Error).message);
+      alert('Error creating poll: ' + (error as Error).message);
       setCurrentStep('form');
       setTransactionHash(null);
     }
@@ -110,16 +104,14 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
 
   if (!isOpen) return null;
 
-  // KROK 2: Czekanie na potwierdzenie transakcji
   if (currentStep === 'confirming') {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Tworzenie ankiety ⏳</h2>
-          <p className="text-gray-600 mb-4">Transakcja została wysłana do sieci Celo...</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Creating Poll ⏳</h2>
+          <p className="text-gray-600 mb-4">Transaction has been sent to Celo network...</p>
           
-          {/* Pasek postępu */}
           <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
             <div className="bg-blue-600 h-2 rounded-full animate-pulse"></div>
           </div>
@@ -135,15 +127,15 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 text-xs underline"
               >
-                🔍 Śledź transakcję na CeloScan
+                🔍 Track transaction on CeloScan
               </a>
             </div>
           )}
           
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
             <p className="text-yellow-800 text-sm">
-              ⏱️ <strong>Proszę czekać...</strong><br/>
-              Potwierdzenie może zająć 5-15 sekund.
+              ⏱️ <strong>Please wait...</strong><br/>
+              Confirmation may take 5-15 seconds.
             </p>
           </div>
         </div>
@@ -151,43 +143,41 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
     );
   }
 
-  // KROK 3: Sukces - ankieta utworzona
   if (currentStep === 'success') {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Ankieta utworzona!</h2>
-          <p className="text-gray-600 mb-4">Twoja ankieta została zapisana na blockchain.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Poll Created!</h2>
+          <p className="text-gray-600 mb-4">Your poll has been saved on the blockchain.</p>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
             <p className="text-green-800 font-semibold">
-              ✅ +1 do progresu nagrody!
+              ✅ +1 to reward progress!
             </p>
           </div>
           <p className="text-gray-500 text-sm">
-            Okno zamknie się automatycznie...
+            Window will close automatically...
           </p>
         </div>
       </div>
     );
   }
 
-  // KROK 1: Formularz tworzenia ankiety
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Utwórz nową ankietę 🗳️</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Create New Poll 🗳️</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tytuł ankiety *
+              Poll Title *
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="np. 'Jaki jest Twój ulubiony kolor?'"
+              placeholder="e.g. 'What is your favorite color?'"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
@@ -196,7 +186,7 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="block text-sm font-medium text-gray-700">
-                Opcje odpowiedzi *
+                Answer Options *
               </label>
               <span className="text-sm text-gray-500">
                 {options.filter(opt => opt.trim().length > 0).length}/10
@@ -210,7 +200,7 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
                     type="text"
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
-                    placeholder={`Opcja ${index + 1}`}
+                    placeholder={`Option ${index + 1}`}
                     className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {options.length > 2 && (
@@ -232,14 +222,14 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
                 onClick={addOption}
                 className="mt-3 w-full py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-200 transition-colors"
               >
-                + Dodaj opcję
+                + Add Option
               </button>
             )}
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <p className="text-blue-800 text-sm">
-              💡 Możesz utworzyć maksymalnie 20 ankiet dziennie. Za każde 10 utworzonych ankiet otrzymasz nagrodę 10,000 VOTE!
+              💡 You can create up to 20 polls daily. For every 10 polls created you'll receive a 10,000 VOTE reward!
             </p>
           </div>
 
@@ -250,7 +240,7 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
               disabled={isCreatingPoll}
               className="flex-1 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              Anuluj
+              Cancel
             </button>
             <button
               type="submit"
@@ -260,10 +250,10 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
               {isCreatingPoll ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Wysyłanie...
+                  Sending...
                 </div>
               ) : (
-                'Utwórz ankietę 🚀'
+                'Create Poll 🚀'
               )}
             </button>
           </div>

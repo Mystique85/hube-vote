@@ -12,18 +12,16 @@ interface Poll {
   totalVotes: bigint;
 }
 
-// Komponent dla pojedynczej ankiety
 const PollItem = ({ pollId }: { pollId: bigint }) => {
   const { usePollInfo, useHasVoted } = useVoteContract();
   const { data: pollInfo, isLoading, error, refetch } = usePollInfo(pollId);
   const { data: hasVoted, refetch: refetchHasVoted } = useHasVoted(pollId);
   const [showVoteModal, setShowVoteModal] = useState(false);
 
-  // Automatyczne odświeżanie po głosowaniu
   useEffect(() => {
     const handleVoteCompleted = (event: CustomEvent) => {
       if (event.detail.pollId === pollId) {
-        console.log('🔄 Automatyczne odświeżanie po głosowaniu...');
+        console.log('🔄 Automatic refresh after voting...');
         refetch();
         refetchHasVoted();
       }
@@ -54,7 +52,7 @@ const PollItem = ({ pollId }: { pollId: bigint }) => {
     debugLogger.contractError(`getPollInfo-${pollId}`, error);
     return (
       <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20">
-        <p className="text-red-300">Błąd ładowania ankiety #{pollId.toString()}</p>
+        <p className="text-red-300">Error loading poll #{pollId.toString()}</p>
       </div>
     );
   }
@@ -63,20 +61,20 @@ const PollItem = ({ pollId }: { pollId: bigint }) => {
 
   const handleVoteClick = () => {
     if (ended) {
-      alert('Ankieta już się zakończyła!');
+      alert('This poll has already ended!');
       return;
     }
     if (hasVoted) {
-      alert('Już zagłosowałeś w tej ankiecie!');
+      alert('You have already voted in this poll!');
       return;
     }
     setShowVoteModal(true);
   };
 
   const getVoteButtonText = () => {
-    if (ended) return '📅 Zakończona';
-    if (hasVoted) return '✅ Już zagłosowano';
-    return '🗳️ Zagłosuj (+100 VOTE)';
+    if (ended) return '📅 Ended';
+    if (hasVoted) return '✅ Already Voted';
+    return '🗳️ Vote (+100 VOTE)';
   };
 
   const getVoteButtonStyle = () => {
@@ -95,31 +93,31 @@ const PollItem = ({ pollId }: { pollId: bigint }) => {
               ? 'bg-red-500/20 text-red-300 border border-red-500/30' 
               : 'bg-green-500/20 text-green-300 border border-green-500/30'
           }`}>
-            {ended ? 'Zakończona' : 'Aktywna'}
+            {ended ? 'Ended' : 'Active'}
           </span>
         </div>
         
         <div className="grid grid-cols-3 gap-4 text-center mb-4">
           <div className="bg-white/5 rounded-lg p-3">
             <div className="text-white font-bold">{totalVotes.toString()}</div>
-            <div className="text-white/60 text-xs">Głosów</div>
+            <div className="text-white/60 text-xs">Votes</div>
           </div>
           <div className="bg-white/5 rounded-lg p-3">
             <div className="text-white font-bold text-sm">
               {new Date(Number(endTime) * 1000).toLocaleDateString()}
             </div>
-            <div className="text-white/60 text-xs">Koniec</div>
+            <div className="text-white/60 text-xs">Ends</div>
           </div>
           <div className="bg-white/5 rounded-lg p-3">
             <div className="text-white font-bold text-xs truncate">
               {creator.slice(0, 6)}...{creator.slice(-4)}
             </div>
-            <div className="text-white/60 text-xs">Twórca</div>
+            <div className="text-white/60 text-xs">Creator</div>
           </div>
         </div>
         
         <div className="text-center text-white/60 text-sm mb-4">
-          Ankieta ID: {pollId.toString()}
+          Poll ID: {pollId.toString()}
         </div>
         
         <button 
@@ -145,10 +143,9 @@ export const PollList = () => {
   const { usePollCount } = useVoteContract();
   const { data: pollCount = 0n, isLoading: isLoadingCount, error: countError, refetch: refetchCount } = usePollCount();
 
-  // DODANE: Automatyczne odświeżanie po stworzeniu ankiety
   useEffect(() => {
     const handlePollCreated = () => {
-      console.log('🔄 Automatyczne odświeżanie po stworzeniu ankiety...');
+      console.log('🔄 Automatic refresh after poll creation...');
       refetchCount();
     };
 
@@ -159,7 +156,6 @@ export const PollList = () => {
     };
   }, [refetchCount]);
 
-  // Debug informacje
   useEffect(() => {
     if (countError) {
       debugLogger.contractError('pollCount', countError);
@@ -174,7 +170,7 @@ export const PollList = () => {
     return (
       <div className="text-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white/80">Ładowanie ankiet...</p>
+        <p className="text-white/80">Loading polls...</p>
       </div>
     );
   }
@@ -183,8 +179,8 @@ export const PollList = () => {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">❌</div>
-        <h3 className="text-xl font-semibold text-red-300 mb-2">Błąd ładowania ankiet</h3>
-        <p className="text-red-200">Sprawdź konsolę F12 dla szczegółów</p>
+        <h3 className="text-xl font-semibold text-red-300 mb-2">Error loading polls</h3>
+        <p className="text-red-200">Check F12 console for details</p>
       </div>
     );
   }
@@ -193,13 +189,12 @@ export const PollList = () => {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">🗳️</div>
-        <h3 className="text-xl font-semibold text-white mb-2">Brak ankiet</h3>
-        <p className="text-white/60">Bądź pierwszy i utwórz ankietę!</p>
+        <h3 className="text-xl font-semibold text-white mb-2">No polls available</h3>
+        <p className="text-white/60">Be the first to create a poll!</p>
       </div>
     );
   }
 
-  // Generujemy listę komponentów PollItem dla każdej ankiety
   const pollItems = [];
   const pollsToShow = Math.min(Number(pollCount), 10);
   
@@ -211,7 +206,7 @@ export const PollList = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white">
-        Aktywne ankiety ({pollItems.filter((_, index) => {
+        Active Polls ({pollItems.filter((_, index) => {
           return true;
         }).length})
       </h2>
@@ -223,7 +218,7 @@ export const PollList = () => {
       {pollItems.length < Number(pollCount) && (
         <div className="text-center">
           <p className="text-white/60">
-            I więcej ankiet... ({Number(pollCount) - pollItems.length} ukrytych)
+            And more polls... ({Number(pollCount) - pollItems.length} hidden)
           </p>
         </div>
       )}
