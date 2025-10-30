@@ -4,7 +4,7 @@ import { LoginModal } from './modules/auth/components/LoginModal'
 import { useState, useEffect } from 'react'
 
 function App() {
-  const { isConnected, address, disconnect } = useAppKit()
+  const { isConnected, disconnect } = useAppKit()
   const [showLogin, setShowLogin] = useState(true)
 
   useEffect(() => {
