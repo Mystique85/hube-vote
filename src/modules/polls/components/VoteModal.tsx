@@ -93,8 +93,8 @@ export const VoteModal = ({ isOpen, onClose, pollId, pollTitle }: VoteModalProps
   // KROK 2: Czekanie na potwierdzenie transakcji
   if (currentStep === 'confirming') {
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+      <div className="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-auto text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Czekam na potwierdzenie ⏳</h2>
           <p className="text-gray-600 mb-4">Transakcja została wysłana do sieci Celo...</p>
@@ -134,8 +134,8 @@ export const VoteModal = ({ isOpen, onClose, pollId, pollTitle }: VoteModalProps
   // KROK 3: Sukces - głosowanie potwierdzone
   if (currentStep === 'success') {
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+      <div className="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-auto text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Głosowanie udane!</h2>
           <p className="text-gray-600 mb-4">Twój głos został zapisany na blockchain.</p>
@@ -154,8 +154,8 @@ export const VoteModal = ({ isOpen, onClose, pollId, pollTitle }: VoteModalProps
 
   // KROK 1: Wybór opcji do głosowania
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-auto">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Głosowanie 🗳️</h2>
         <p className="text-gray-600 mb-6">{pollTitle}</p>
 
