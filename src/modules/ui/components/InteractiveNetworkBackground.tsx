@@ -25,20 +25,6 @@ const InteractiveNetworkBackground = () => {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      
-      // Rysuj gradient tła przy każdym resize
-      drawBackground();
-    };
-
-    const drawBackground = () => {
-      // Tworzenie gradientu
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, 'rgba(59, 130, 246, 0.1)');    // blue-500/10
-      gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.1)'); // purple-600/10  
-      gradient.addColorStop(1, 'rgba(236, 72, 153, 0.1)');   // pink-500/10
-      
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
     const createNodes = () => {
@@ -156,11 +142,7 @@ const InteractiveNetworkBackground = () => {
     };
 
     const animate = () => {
-      // TYLKO czyścimy obszar z animacją, nie tło
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Od nowa rysujemy tło w każdej klatce
-      drawBackground();
       
       updateNodes();
       drawConnections();
@@ -192,11 +174,7 @@ const InteractiveNetworkBackground = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ 
-        width: '100vw', 
-        height: '100vh',
-        display: 'block'
-      }}
+      style={{ background: 'transparent' }}
     />
   );
 };

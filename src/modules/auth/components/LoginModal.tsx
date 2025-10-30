@@ -1,47 +1,70 @@
-import { AnimatedCanvas } from '../../../modules/ui/components/AnimatedCanvas'
+import { useAppKit } from '../index'
+import { useState, useEffect } from 'react'
 
-export function LoginModal() {
+export const LoginModal = () => {
+  const { isConnected, address } = useAppKit()
+  const [showWelcome, setShowWelcome] = useState(true)
+
+  useEffect(() => {
+    if (isConnected) {
+      setShowWelcome(false)
+    }
+  }, [isConnected])
+
+  if (!showWelcome) return null
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Canvas Background */}
-      <AnimatedCanvas />
-      
-      {/* Content */}
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 max-w-md w-full relative z-10 transform transition-all duration-500 hover:scale-105">
-        {/* Logo/Header */}
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4 z-50">
+      <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🗳️</div>
-          <h1 className="text-5xl font-bold text-white mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-            HUB Vote
-          </h1>
+          <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+            <span className="text-3xl">🗳️</span>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2">HUB Vote</h1>
           <p className="text-white/80 text-lg">Decentralized Voting Platform</p>
         </div>
 
-        {/* Features list */}
-        <div className="space-y-3 mb-8">
-          <div className="flex items-center space-x-3 text-white/90">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>Vote anonymously on important decisions</span>
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-3 text-white/90">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+            <span>Secure blockchain voting</span>
           </div>
-          <div className="flex items-center space-x-3 text-white/90">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>Earn VOTE tokens for participation</span>
+          <div className="flex items-center gap-3 text-white/90">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+            <span>Transparent results</span>
           </div>
-          <div className="flex items-center space-x-3 text-white/90">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Create polls with HC token requirements</span>
+          <div className="flex items-center gap-3 text-white/90">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+            <span>One vote per wallet</span>
           </div>
         </div>
 
-        {/* Connect Button */}
         <div className="flex justify-center">
           <appkit-button />
         </div>
 
-        {/* Info text */}
-        <p className="text-white/60 text-center mt-6 text-sm">
-          Connect your wallet to start voting
-        </p>
+        <div className="text-center mt-6">
+          <p className="text-white/60 text-sm">
+            Connect your wallet to start voting
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center">
+        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-3">
+          <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center">
+            <span className="text-xs font-bold text-blue-600">HUB</span>
+          </div>
+          <div className="text-left">
+            <p className="text-white text-sm font-light">
+              © 2025 HUB Ecosystem. All rights reserved.
+            </p>
+            <p className="text-white/60 text-xs">
+              Project by <span className="text-white font-medium">@Mysticpol</span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
