@@ -1,21 +1,31 @@
 import { useAppKit } from '../index'
 import { useState, useEffect } from 'react'
+import InteractiveNetworkBackground from '../../ui/components/AnimatedCanvas'
 
 export const LoginModal = () => {
   const { isConnected, address } = useAppKit()
   const [showWelcome, setShowWelcome] = useState(true)
 
   useEffect(() => {
-    if (isConnected) {
-      setShowWelcome(false)
+    // Automatically hide when connected
+    if (isConnected && address) {
+      console.log('✅ Wallet connected, hiding login modal');
+      setShowWelcome(false);
     }
-  }, [isConnected])
+  }, [isConnected, address]);
 
-  if (!showWelcome) return null
+  // Don't render if not showing or already connected
+  if (!showWelcome || isConnected) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4 z-50">
-      <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4 z-50 overflow-hidden">
+      {/* Interaktywne tło */}
+      <InteractiveNetworkBackground />
+      
+      {/* Modal logowania */}
+      <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl relative z-10">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-3xl">🗳️</span>
@@ -51,7 +61,7 @@ export const LoginModal = () => {
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center z-10">
         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-3">
           <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center">
             <span className="text-xs font-bold text-blue-600">HUB</span>

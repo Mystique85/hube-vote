@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useVoteContract } from '../../../hooks/useVoteContract';
-import { debugLogger } from '../../../utils/debugLogger';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
 interface VoteModalProps {
@@ -41,7 +40,6 @@ export const VoteModal = ({ isOpen, onClose, pollId, pollTitle }: VoteModalProps
 
   useEffect(() => {
     if (isConfirmed && transactionHash) {
-      debugLogger.walletDebug.transactionStatus(transactionHash, 'success', 'vote');
       console.log(`✅ Transaction confirmed! Vote cast in poll ${pollId}`);
       setCurrentStep('success');
       
@@ -70,13 +68,12 @@ export const VoteModal = ({ isOpen, onClose, pollId, pollTitle }: VoteModalProps
       
       if (hash) {
         setTransactionHash(hash);
-        debugLogger.walletDebug.transactionStatus(hash, 'pending', 'vote');
         console.log(`⏳ Transaction sent: ${hash}`);
       } else {
         throw new Error('No transaction hash');
       }
     } catch (error) {
-      debugLogger.pollDebug.votingError(pollId, error, 'current-user');
+      console.error('❌ Voting error:', error);
       alert('Error during voting: ' + (error as Error).message);
       setCurrentStep('select');
       setTransactionHash(null);

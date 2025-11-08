@@ -1,0 +1,292 @@
+// 🕵️‍♂️ DEEP PROJECT ANALYSIS - HUB VOTE PLATFORM (FIXED SELECTORS)
+console.log('🚀 STARTING COMPREHENSIVE PROJECT ANALYSIS...\n');
+
+// =============================================================================
+// 1. QUICK FUNCTIONALITY TEST
+// =============================================================================
+console.log('🧪 QUICK FUNCTIONALITY TEST:');
+
+// Test podstawowych funkcji
+const testBasicFunctionality = () => {
+  const tests = {
+    walletConnected: !!window.ethereum?.selectedAddress,
+    contractDataLoading: document.textContent?.includes('Loading') || false,
+    pollsVisible: document.querySelectorAll('[class*="poll"]').length > 0,
+    userPanelWorking: document.querySelector('header') !== null,
+    buttonsClickable: document.querySelectorAll('button:not([disabled])').length
+  };
+  
+  console.log('🔍 Basic Tests:', tests);
+  return tests;
+};
+testBasicFunctionality();
+
+// =============================================================================
+// 2. CONTRACT DATA ANALYSIS
+// =============================================================================
+console.log('\n📊 CONTRACT DATA ANALYSIS:');
+
+// Sprawdź jakie dane są ładowane z kontraktu
+const analyzeContractData = () => {
+  console.log('📈 Current Contract State:');
+  
+  // Sprawdź czy dane są ładowane w UI
+  const loadingElements = Array.from(document.querySelectorAll('*'))
+    .filter(el => el.textContent?.includes('Loading'))
+    .map(el => el.textContent?.substring(0, 50))
+    .slice(0, 3);
+  
+  console.log('🔄 Loading States:', loadingElements);
+  
+  // Sprawdź stan ankiet
+  const pollElements = document.querySelectorAll('[class*="poll"], [class*="vote"]');
+  console.log(`🗳️ Poll Elements Found: ${pollElements.length}`);
+  
+  // Sprawdź stan użytkownika
+  const balanceInfo = Array.from(document.querySelectorAll('*'))
+    .filter(el => el.textContent?.includes('VOTE') && !el.textContent?.includes('Loading'))
+    .map(el => el.textContent?.substring(0, 30))
+    .slice(0, 3);
+  
+  console.log('💰 Balance Info:', balanceInfo);
+};
+analyzeContractData();
+
+// =============================================================================
+// 3. INTERACTIVE ELEMENTS ANALYSIS (FIXED)
+// =============================================================================
+console.log('\n🎯 INTERACTIVE ELEMENTS ANALYSIS:');
+
+const analyzeInteractivity = () => {
+  const allButtons = Array.from(document.querySelectorAll('button'));
+  
+  const interactiveAnalysis = {
+    totalButtons: allButtons.length,
+    enabledButtons: allButtons.filter(btn => !btn.disabled).length,
+    // Grupuj przyciski według tekstu
+    byFunction: {
+      vote: allButtons.filter(btn => 
+        btn.textContent?.includes('Vote') || btn.textContent?.includes('🗳️')
+      ).length,
+      create: allButtons.filter(btn => 
+        btn.textContent?.includes('Create') || btn.textContent?.includes('➕')
+      ).length,
+      connect: allButtons.filter(btn => 
+        btn.textContent?.includes('Connect') || btn.textContent?.includes('Disconnect')
+      ).length,
+      filter: allButtons.filter(btn => 
+        btn.textContent?.includes('Filter') || btn.className?.includes('filter')
+      ).length,
+      other: allButtons.filter(btn => 
+        !btn.textContent?.includes('Vote') && 
+        !btn.textContent?.includes('Create') &&
+        !btn.textContent?.includes('Connect') &&
+        !btn.textContent?.includes('Filter')
+      ).length
+    }
+  };
+  
+  console.log('🖱️ Button Analysis:', interactiveAnalysis);
+  
+  // Test dostępności głównych funkcji (POPRAWIONE SELEKTORY)
+  console.log('\n🔍 Main Function Availability:');
+  
+  // Znajdź przyciski po tekście
+  const findButtonByText = (text) => allButtons.find(btn => btn.textContent?.includes(text));
+  
+  const mainFunctions = {
+    'Create Poll': findButtonByText('Create') || findButtonByText('➕'),
+    'Vote in Poll': findButtonByText('Vote') || findButtonByText('🗳️'),
+    'User Profile': document.querySelector('header button') || allButtons.find(btn => btn.className?.includes('user')),
+    'Filters': findButtonByText('Filter') || allButtons.find(btn => btn.className?.includes('filter'))
+  };
+  
+  Object.entries(mainFunctions).forEach(([name, element]) => {
+    if (element) {
+      console.log(`✅ ${name}: FOUND ("${element.textContent?.substring(0, 20).trim()}")`);
+      // Podświetl znalezione przyciski
+      element.style.border = '2px solid green';
+      element.style.boxShadow = '0 0 8px green';
+    } else {
+      console.log(`❌ ${name}: NOT FOUND`);
+    }
+  });
+  
+  return interactiveAnalysis;
+};
+analyzeInteractivity();
+
+// =============================================================================
+// 4. USER JOURNEY SIMULATION (FIXED)
+// =============================================================================
+console.log('\n🔄 USER JOURNEY SIMULATION:');
+
+const simulateUserJourney = () => {
+  console.log('👤 Simulating typical user actions:');
+  
+  const allButtons = Array.from(document.querySelectorAll('button'));
+  const findButtonByText = (text) => allButtons.find(btn => btn.textContent?.includes(text));
+  
+  const journeySteps = [
+    {
+      step: "View Polls",
+      test: () => document.querySelectorAll('[class*="poll"]').length > 0,
+      status: null
+    },
+    {
+      step: "Check Balance", 
+      test: () => document.textContent?.includes('VOTE') && !document.textContent?.includes('Loading'),
+      status: null
+    },
+    {
+      step: "Vote Button Available",
+      test: () => findButtonByText('Vote') || findButtonByText('🗳️'),
+      status: null
+    },
+    {
+      step: "Create Poll Available",
+      test: () => findButtonByText('Create') || findButtonByText('➕'),
+      status: null
+    },
+    {
+      step: "User Profile Access",
+      test: () => document.querySelector('header button') || allButtons.find(btn => btn.className?.includes('user')),
+      status: null
+    }
+  ];
+  
+  journeySteps.forEach(step => {
+    step.status = step.test() ? '✅' : '❌';
+    console.log(`${step.status} ${step.step}`);
+  });
+  
+  return journeySteps;
+};
+simulateUserJourney();
+
+// =============================================================================
+// 5. SPECIFIC BUTTON FUNCTIONALITY TEST
+// =============================================================================
+console.log('\n🧪 SPECIFIC BUTTON FUNCTIONALITY TEST:');
+
+const testSpecificButtons = () => {
+  const allButtons = Array.from(document.querySelectorAll('button'));
+  const findButtonByText = (text) => allButtons.find(btn => btn.textContent?.includes(text));
+  
+  const buttonsToTest = [
+    { name: 'Create Poll', button: findButtonByText('Create') || findButtonByText('➕') },
+    { name: 'Vote Button', button: findButtonByText('Vote') || findButtonByText('🗳️') },
+    { name: 'Disconnect', button: findButtonByText('Disconnect') },
+    { name: 'Filter Active', button: findButtonByText('Active') },
+    { name: 'Filter Ended', button: findButtonByText('Ended') }
+  ];
+  
+  console.log('🔍 Testing individual buttons:');
+  
+  buttonsToTest.forEach(({name, button}) => {
+    if (button) {
+      const isEnabled = !button.disabled;
+      const hasClick = !!button.onclick || getEventListeners?.(button)?.click?.length > 0;
+      
+      console.log(`   ${isEnabled ? '✅' : '❌'} ${name}: ${isEnabled ? 'ENABLED' : 'DISABLED'} ${hasClick ? '+ CLICK' : '+ NO CLICK'}`);
+      
+      // Wizualne oznaczenie
+      if (isEnabled) {
+        button.style.border = '2px solid blue';
+        button.style.margin = '2px';
+      } else {
+        button.style.border = '2px solid orange';
+        button.style.margin = '2px';
+      }
+    } else {
+      console.log(`   ❌ ${name}: NOT FOUND`);
+    }
+  });
+};
+testSpecificButtons();
+
+// =============================================================================
+// 6. ACTION PLAN BASED ON ANALYSIS
+// =============================================================================
+console.log('\n🎯 ACTION PLAN BASED ON ANALYSIS:');
+
+const createActionPlan = () => {
+  const allButtons = Array.from(document.querySelectorAll('button'));
+  const enabledButtons = allButtons.filter(btn => !btn.disabled).length;
+  const totalButtons = allButtons.length;
+  
+  console.log(`📊 Current State: ${enabledButtons}/${totalButtons} buttons enabled`);
+  
+  if (enabledButtons / totalButtons < 0.7) {
+    console.log('🚨 ISSUE: Many buttons are disabled - check contract connection');
+  } else {
+    console.log('✅ GOOD: Most buttons are enabled');
+  }
+  
+  console.log('\n🔧 IMMEDIATE ACTIONS:');
+  console.log('1. Test Create Poll button functionality');
+  console.log('2. Test Vote button on actual polls');
+  console.log('3. Verify user balance display');
+  console.log('4. Check if polls are loading from contract');
+  
+  console.log('\n🎯 NEXT FEATURES TO IMPLEMENT:');
+  console.log('1. Firebase user profiles and history');
+  console.log('2. Advanced poll filtering and search');
+  console.log('3. Real-time vote notifications');
+  console.log('4. Mobile-responsive improvements');
+};
+createActionPlan();
+
+// =============================================================================
+// 7. QUICK DIAGNOSTIC TOOLS
+// =============================================================================
+console.log('\n🔧 QUICK DIAGNOSTIC TOOLS:');
+
+// Dodaj narzędzia diagnostyczne do globalnego obiektu
+window.appDiagnostics = {
+  // Testuj konkretny przycisk
+  testButton: (buttonText) => {
+    const allButtons = Array.from(document.querySelectorAll('button'));
+    const button = allButtons.find(btn => btn.textContent?.includes(buttonText));
+    if (button) {
+      console.log(`🧪 Testing "${buttonText}":`, button);
+      button.click();
+      return button;
+    } else {
+      console.log(`❌ Button "${buttonText}" not found`);
+      return null;
+    }
+  },
+  
+  // Znajdź wszystkie przyciski z tekstem
+  findButtons: (text) => {
+    const allButtons = Array.from(document.querySelectorAll('button'));
+    return allButtons.filter(btn => btn.textContent?.includes(text));
+  },
+  
+  // Sprawdź stan kontraktu
+  checkContract: () => {
+    console.log('📋 Contract Status:');
+    console.log('  - Wallet:', window.ethereum?.selectedAddress || 'Not connected');
+    console.log('  - Network:', window.ethereum?.chainId || 'Unknown');
+    console.log('  - Polls loaded:', document.querySelectorAll('[class*="poll"]').length);
+  },
+  
+  // Podświetl wszystkie aktywne przyciski
+  highlightActive: () => {
+    const activeButtons = Array.from(document.querySelectorAll('button:not([disabled])'));
+    activeButtons.forEach(btn => {
+      btn.style.border = '2px solid #00ff00';
+      btn.style.boxShadow = '0 0 5px #00ff00';
+    });
+    console.log(`🎯 Highlighted ${activeButtons.length} active buttons`);
+  }
+};
+
+console.log('💡 Use window.appDiagnostics for quick testing:');
+console.log('   - appDiagnostics.testButton("Create")');
+console.log('   - appDiagnostics.highlightActive()');
+console.log('   - appDiagnostics.checkContract()');
+
+console.log('\n🎉 ANALYSIS COMPLETE!');
+console.log('🔧 Focus on testing the highlighted buttons above.');
