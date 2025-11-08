@@ -1,44 +1,21 @@
-import { useRef, useEffect } from 'react';
+// src/components/layout/NetworkBackground.jsx
+import { useEffect, useRef } from 'react';
 
 const InteractiveNetworkBackground = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | null>(null);
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let nodes: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-      color: string;
-    }> = [];
-    
+    let nodes = [];
     let mouse = { x: 0, y: 0 };
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      
-      // Rysuj gradient tła przy każdym resize
-      drawBackground();
-    };
-
-    const drawBackground = () => {
-      // Tworzenie gradientu
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, 'rgba(59, 130, 246, 0.1)');    // blue-500/10
-      gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.1)'); // purple-600/10  
-      gradient.addColorStop(1, 'rgba(236, 72, 153, 0.1)');   // pink-500/10
-      
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
     const createNodes = () => {
@@ -64,7 +41,7 @@ const InteractiveNetworkBackground = () => {
       return colors[Math.floor(Math.random() * colors.length)];
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
     };
@@ -156,11 +133,7 @@ const InteractiveNetworkBackground = () => {
     };
 
     const animate = () => {
-      // TYLKO czyścimy obszar z animacją, nie tło
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Od nowa rysujemy tło w każdej klatce
-      drawBackground();
       
       updateNodes();
       drawConnections();
@@ -192,11 +165,7 @@ const InteractiveNetworkBackground = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ 
-        width: '100vw', 
-        height: '100vh',
-        display: 'block'
-      }}
+      style={{ background: 'transparent' }}
     />
   );
 };
