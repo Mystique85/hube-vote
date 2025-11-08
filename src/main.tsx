@@ -4,16 +4,9 @@ import { AppKitProvider } from './modules/auth'
 import App from './App'
 import './index.css' 
 
-// IMPORT DEBUG SYSTEM - zawsze aktywny w development
-import { debugLogger } from './utils/debugLogger'
-
-// Automatyczne logowanie informacji o starcie aplikacji
+// 👇 PROSTY LOG DLA DEVELOPMENT - BEZ DEBUG LOGGER
 if (import.meta.env.DEV) {
-  debugLogger.enableDebug();
-  console.log('%c🔧 HUB VOTE DEBUG MODE AKTYWNY', 'color: #2ecc71; font-weight: bold; font-size: 16px;');
-  
-  // Globalna funkcja debug dla konsoli F12
-  (window as any).hubDebug = debugLogger;
+  console.log('🔧 HUB VOTE - Development Mode Active');
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

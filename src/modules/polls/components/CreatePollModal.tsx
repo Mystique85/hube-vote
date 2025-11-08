@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useVoteContract } from '../../../hooks/useVoteContract';
-import { debugLogger } from '../../../utils/debugLogger';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
 interface CreatePollModalProps {
@@ -28,7 +27,6 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
 
   useEffect(() => {
     if (isConfirmed && transactionHash) {
-      debugLogger.walletDebug.transactionStatus(transactionHash, 'success', 'createPoll');
       console.log(`✅ Transaction confirmed! Poll created`);
       setCurrentStep('success');
       
@@ -63,13 +61,12 @@ export const CreatePollModal = ({ isOpen, onClose }: CreatePollModalProps) => {
       
       if (hash) {
         setTransactionHash(hash);
-        debugLogger.walletDebug.transactionStatus(hash, 'pending', 'createPoll');
         console.log(`⏳ Transaction sent: ${hash}`);
       } else {
         throw new Error('No transaction hash');
       }
     } catch (error) {
-      debugLogger.pollDebug.creationError(error, 'current-user');
+      console.error('❌ Error creating poll:', error);
       alert('Error creating poll: ' + (error as Error).message);
       setCurrentStep('form');
       setTransactionHash(null);
