@@ -39,13 +39,13 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
   const handleDonate = async () => {
     if (!isConnected || !address) {
-      alert('Proszę połączyć portfel aby wysłać darowiznę');
+      alert('Please connect your wallet to send a donation');
       return;
     }
 
     const donateAmount = customAmount || amount;
     if (!donateAmount || parseFloat(donateAmount) <= 0) {
-      alert('Proszę wybrać kwotę darowizny');
+      alert('Please select a donation amount');
       return;
     }
 
@@ -79,7 +79,7 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
       }
     } catch (error) {
       console.error('❌ Donation error:', error);
-      alert('Błąd podczas wysyłania darowizny: ' + (error as Error).message);
+      alert('Error sending donation: ' + (error as Error).message);
       setCurrentStep('select');
       setTxHash(null);
     }
@@ -102,8 +102,8 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Wysyłanie Darowizny ⏳</h2>
-          <p className="text-gray-600 mb-4">Transakcja została wysłana do sieci Celo...</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Sending Donation ⏳</h2>
+          <p className="text-gray-600 mb-4">Transaction has been sent to the Celo network...</p>
           
           <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
             <div className="bg-yellow-500 h-2 rounded-full animate-pulse"></div>
@@ -120,15 +120,15 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 rel="noopener noreferrer"
                 className="text-yellow-600 hover:text-yellow-800 text-xs underline"
               >
-                🔍 Śledź transakcję na CeloScan
+                🔍 Track transaction on CeloScan
               </a>
             </div>
           )}
           
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
             <p className="text-blue-800 text-sm">
-              ⏱️ <strong>Proszę czekać...</strong><br/>
-              Potwierdzenie może zająć 5-15 sekund.
+              ⏱️ <strong>Please wait...</strong><br/>
+              Confirmation may take 5-15 seconds.
             </p>
           </div>
         </div>
@@ -141,15 +141,15 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Dziękujemy!</h2>
-          <p className="text-gray-600 mb-4">Twoja darowizna została pomyślnie wysłana.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Thank You!</h2>
+          <p className="text-gray-600 mb-4">Your donation has been successfully sent.</p>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
             <p className="text-green-800 font-semibold">
-              💝 Dziękujemy za wsparcie projektu HUB Vote!
+              💝 Thank you for supporting the HUB Vote project!
             </p>
           </div>
           <p className="text-gray-500 text-sm">
-            Okno zamknie się automatycznie...
+            Window will close automatically...
           </p>
         </div>
       </div>
@@ -160,7 +160,7 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Wesprzyj Projekt 💝</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Support the Project 💝</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none"
@@ -171,19 +171,19 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
         <div className="mb-6">
           <p className="text-gray-600 mb-4 text-center">
-            Twoje wsparcie pomaga rozwijać HUB Ecosystem i tworzyć lepsze narzędzia dla społeczności!
+            Your support helps develop the HUB Ecosystem and create better tools for the community!
           </p>
           
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
             <p className="text-yellow-800 text-sm text-center">
-              💛 Wszystkie darowizny są wysyłane w tokenach CELO
+              💛 All donations are sent in CELO tokens
             </p>
           </div>
         </div>
 
         {/* Preset Amounts */}
         <div className="mb-6">
-          <h3 className="text-gray-800 font-semibold mb-3">Wybierz kwotę:</h3>
+          <h3 className="text-gray-800 font-semibold mb-3">Select amount:</h3>
           <div className="grid grid-cols-3 gap-3 mb-4">
             {presetAmounts.map((presetAmount) => (
               <button
@@ -203,7 +203,7 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
           {/* Custom Amount */}
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-2">
-              Lub wpisz własną kwotę:
+              Or enter custom amount:
             </label>
             <div className="relative">
               <input
@@ -226,13 +226,13 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
           <div className="text-center">
             <p className="text-blue-800 font-semibold text-sm mb-1">
-              Adres odbiorcy:
+              HUB Development Team Address:
             </p>
             <p className="text-blue-600 text-xs font-mono break-all">
               {DONATION_ADDRESS}
             </p>
             <p className="text-blue-700 text-xs mt-2">
-              Darowizna zostanie wysłana bezpośrednio na ten adres
+              Donation will be sent directly to this address
             </p>
           </div>
         </div>
@@ -243,7 +243,7 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
             onClick={onClose}
             className="flex-1 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all"
           >
-            Anuluj
+            Cancel
           </button>
           <button
             onClick={handleDonate}
@@ -253,11 +253,11 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
             {isSending ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Wysyłanie...
+                Sending...
               </>
             ) : (
               <>
-                💝 Wyślij Darowiznę
+                💝 Send Donation
               </>
             )}
           </button>
@@ -267,7 +267,7 @@ export const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         {!isConnected && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
             <p className="text-red-700 text-sm text-center">
-              🔗 Proszę połączyć portfel aby wysłać darowiznę
+              🔗 Please connect your wallet to send a donation
             </p>
           </div>
         )}

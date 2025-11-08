@@ -73,7 +73,7 @@ export const HeaderComponent = () => {
                   💝
                 </div>
                 <span className="text-white font-medium text-sm hidden md:block">
-                  Wesprzyj Projekt
+                  Support Project
                 </span>
               </button>
 
