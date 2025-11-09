@@ -8,13 +8,12 @@ export const useVoteContract = () => {
   const { address } = useAppKit();
   const queryClient = useQueryClient();
   
-  // Odczyt danych z kontraktu
   const usePollCount = () => useReadContract({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: 'pollCount',
     query: {
-      refetchInterval: 15000, // Auto-refresh co 15 sekund
+      refetchInterval: 15000,
     }
   });
 
@@ -25,7 +24,7 @@ export const useVoteContract = () => {
     args: [pollId],
     query: { 
       enabled: pollId !== undefined,
-      refetchInterval: 10000, // Auto-refresh co 10 sekund
+      refetchInterval: 10000,
     }
   });
 
@@ -95,32 +94,25 @@ export const useVoteContract = () => {
     }
   });
 
-  // Zapisy do kontraktu
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
   const executeContractWrite = async (functionName: string, args: any[]) => {
-    try {
-      const hash = await writeContractAsync({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName,
-        args,
-      });
-      
-      // Invalidate queries after successful write
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
-        queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
-        queryClient.invalidateQueries({ queryKey: ['pollCount'] });
-        queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
-        queryClient.invalidateQueries({ queryKey: ['dailyPollsCreated', address] });
-      }, 2000); // Wait 2 seconds before refreshing
-      
-      return hash;
-    } catch (error) {
-      console.error(`❌ ${functionName} error:`, error);
-      throw error;
-    }
+    const hash = await writeContractAsync({
+      address: CONTRACT_ADDRESS,
+      abi: CONTRACT_ABI,
+      functionName,
+      args,
+    });
+    
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
+      queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
+      queryClient.invalidateQueries({ queryKey: ['pollCount'] });
+      queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
+      queryClient.invalidateQueries({ queryKey: ['dailyPollsCreated', address] });
+    }, 2000);
+    
+    return hash;
   };
 
   const useTransactionStatus = (hash: `0x${string}` | undefined) => {
@@ -129,7 +121,6 @@ export const useVoteContract = () => {
       query: { 
         enabled: !!hash,
         refetchInterval: (data) => {
-          // Refetch more frequently while confirming
           return data?.status === 'success' ? false : 2000;
         }
       }
@@ -137,13 +128,10 @@ export const useVoteContract = () => {
   };
 
   const createPoll = async (title: string, options: string[]) => {
-    console.log('📝 Creating poll:', title, options);
     const hash = await executeContractWrite('createPoll', [title, options]);
     
-    // Dispatch event for real-time updates
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('pollCreated'));
-      // Refresh poll-related data
       queryClient.invalidateQueries({ queryKey: ['pollCount'] });
       queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
       queryClient.invalidateQueries({ queryKey: ['dailyPollsCreated', address] });
@@ -154,15 +142,15 @@ export const useVoteContract = () => {
   };
 
   const vote = async (pollId: bigint, optionIndex: bigint) => {
-    console.log('🗳️ Voting for poll:', pollId, 'option:', optionIndex);
     const hash = await executeContractWrite('vote', [pollId, optionIndex]);
     
-    // Dispatch event for real-time updates
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('voteCompleted', { 
         detail: { pollId } 
       }));
-      // Refresh vote-related data
+      window.dispatchEvent(new CustomEvent('userVoted', { 
+        detail: { pollId, voter: address } 
+      }));
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['hasVoted', address, pollId] });
       queryClient.invalidateQueries({ queryKey: ['pollInfo', pollId] });
@@ -173,13 +161,10 @@ export const useVoteContract = () => {
   };
 
   const claimCreatorReward = async () => {
-    console.log('🎁 Claiming creator rewards');
     const hash = await executeContractWrite('claimCreatorReward', []);
     
-    // Dispatch event for real-time updates
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('rewardClaimed'));
-      // Refresh reward-related data
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
       queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
@@ -188,42 +173,32 @@ export const useVoteContract = () => {
     return hash;
   };
 
-  // Real-time updates for all connected data
   useEffect(() => {
     if (!address) return;
 
-    // Refresh all user-related data periodically
     const interval = setInterval(() => {
-      console.log('🔄 Auto-refreshing contract data...');
-      
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
       queryClient.invalidateQueries({ queryKey: ['pollCount'] });
       queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
       queryClient.invalidateQueries({ queryKey: ['dailyPollsCreated', address] });
-      
-      // Invalidate all poll data
       queryClient.invalidateQueries({ queryKey: ['pollInfo'] });
       queryClient.invalidateQueries({ queryKey: ['pollOptions'] });
       queryClient.invalidateQueries({ queryKey: ['hasVoted'] });
-    }, 15000); // Refresh every 15 seconds
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [address, queryClient]);
 
-  // Listen for blockchain events and refresh data
   useEffect(() => {
     const handlePollCreated = () => {
-      console.log('🔄 Poll created event received - refreshing data');
       queryClient.invalidateQueries({ queryKey: ['pollCount'] });
       queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
       queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
     };
 
     const handleVoteCompleted = (event: CustomEvent) => {
-      console.log('🔄 Vote completed event received - refreshing data');
       const { pollId } = event.detail;
-      
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['hasVoted', address, pollId] });
       queryClient.invalidateQueries({ queryKey: ['pollInfo', pollId] });
@@ -231,7 +206,6 @@ export const useVoteContract = () => {
     };
 
     const handleRewardClaimed = () => {
-      console.log('🔄 Reward claimed event received - refreshing data');
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });
       queryClient.invalidateQueries({ queryKey: ['totalPollsCreated', address] });
@@ -249,7 +223,6 @@ export const useVoteContract = () => {
   }, [address, queryClient]);
 
   return {
-    // Odczyty
     usePollCount,
     usePollInfo,
     usePollOptions,
@@ -258,19 +231,13 @@ export const useVoteContract = () => {
     usePendingRewards,
     useTotalPollsCreated,
     useDailyPollsCreated,
-    
-    // Zapisy
     createPoll,
     vote,
     claimCreatorReward,
     isCreatingPoll: isWriting,
     isVoting: isWriting,
     isClaiming: isWriting,
-    
-    // Transaction status
     useTransactionStatus,
-    
-    // Manual refresh functions
     refreshUserData: () => {
       queryClient.invalidateQueries({ queryKey: ['userBalance', address] });
       queryClient.invalidateQueries({ queryKey: ['pendingRewards', address] });

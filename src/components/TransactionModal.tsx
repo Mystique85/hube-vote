@@ -25,7 +25,6 @@ export const TransactionModal = ({
   
   useEffect(() => {
     if (isConfirmed) {
-      // Auto close after success
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
@@ -40,15 +39,15 @@ export const TransactionModal = ({
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Sukces!</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Success!</h2>
           <p className="text-gray-600 mb-6">{successMessage}</p>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
             <p className="text-green-800 font-semibold">
-              ✅ Transakcja potwierdzona!
+              ✅ Transaction confirmed!
             </p>
           </div>
           <p className="text-gray-500 text-sm">
-            Okno zamknie się automatycznie...
+            Window will close automatically...
           </p>
         </div>
       </div>
@@ -77,15 +76,15 @@ export const TransactionModal = ({
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 text-xs underline"
             >
-              🔍 Śledź transakcję na CeloScan
+              🔍 Track transaction on CeloScan
             </a>
           </div>
         )}
         
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
           <p className="text-yellow-800 text-sm">
-            ⏱️ <strong>Proszę czekać...</strong><br/>
-            Potwierdzenie może zająć 5-15 sekund.
+            ⏱️ <strong>Please wait...</strong><br/>
+            Confirmation may take 5-15 seconds.
           </p>
         </div>
       </div>

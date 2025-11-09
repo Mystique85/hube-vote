@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useVoteContract } from '../hooks/useVoteContract';
 import { PollCard } from './PollCard';
 import { CarouselNavigation } from './CarouselNavigation';
@@ -18,78 +18,58 @@ export const PollCarousel = ({
 }: PollCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
-  const { usePollCount } = useVoteContract();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data: pollCount = 0n } = usePollCount();
-  const visiblePolls = pollIds.slice(0, 20); // Max 20 ankiet w karuzeli
-
-  // Auto-play functionality
   useEffect(() => {
-    if (!isAutoPlaying || visiblePolls.length <= 1) return;
+    if (!isAutoPlaying || pollIds.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % visiblePolls.length);
-    }, 8000); // Zmiana co 8 sekund
+      setCurrentIndex((prev) => (prev + 1) % pollIds.length);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, visiblePolls.length]);
+  }, [isAutoPlaying, pollIds.length]);
 
-  // Reset when pollIds change
   useEffect(() => {
     setCurrentIndex(0);
   }, [pollIds]);
 
-  if (visiblePolls.length === 0) {
-    return (
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-        <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
-        <div className="text-white/60">Brak ankiet do wyświetlenia</div>
-      </div>
-    );
-  }
-
-  const getVisiblePollIds = () => {
-    // Na mobile: 1 karta, na desktop: 3 karty
-    const isMobile = window.innerWidth < 768;
-    const cardsToShow = isMobile ? 1 : 3;
-    
-    const startIndex = currentIndex;
-    const endIndex = Math.min(currentIndex + cardsToShow, visiblePolls.length);
-    
-    let pollIdsSlice = visiblePolls.slice(startIndex, endIndex);
-    
-    // Jeśli brakuje kart do pokazania, weź z początku tablicy
-    if (pollIdsSlice.length < cardsToShow && visiblePolls.length > cardsToShow) {
-      const needed = cardsToShow - pollIdsSlice.length;
-      pollIdsSlice = [...pollIdsSlice, ...visiblePolls.slice(0, needed)];
-    }
-    
-    return pollIdsSlice;
-  };
-
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % visiblePolls.length);
+    const newIndex = (currentIndex + 1) % pollIds.length;
+    setCurrentIndex(newIndex);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + visiblePolls.length) % visiblePolls.length);
+    const newIndex = (currentIndex - 1 + pollIds.length) % pollIds.length;
+    setCurrentIndex(newIndex);
   };
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
   };
 
-  const visiblePollIds = getVisiblePollIds();
+  if (pollIds.length === 0) {
+    return (
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+        <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
+        <div className="text-white/60">No polls to display</div>
+      </div>
+    );
+  }
+
+  const currentPollId = pollIds[currentIndex];
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div 
+      ref={containerRef}
+      className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 flex flex-col h-full"
+    >
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div>
           <h3 className="text-xl font-bold text-white">{title}</h3>
           {showStatus && (
             <p className="text-white/60 text-sm">
-              {visiblePolls.length} ankiet • {currentIndex + 1}/{visiblePolls.length}
+              {currentIndex + 1} of {pollIds.length} polls
             </p>
           )}
         </div>
@@ -108,61 +88,58 @@ export const PollCarousel = ({
         )}
       </div>
 
-      {/* Carousel Container */}
-      <div className="relative">
-        {/* Navigation Arrows */}
-        {visiblePolls.length > 1 && (
+      <div className="relative flex-1 flex flex-col min-h-0">
+        
+        {pollIds.length > 1 && (
           <>
             <button
               onClick={prevSlide}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-sm border border-white/20"
-              aria-label="Poprzednia ankieta"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 z-30 w-10 h-10 bg-blue-600/90 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-all border-2 border-white/40 shadow-2xl backdrop-blur-sm"
+              aria-label="Previous poll"
             >
               ‹
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-sm border border-white/20"
-              aria-label="Następna ankieta"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 z-30 w-10 h-10 bg-blue-600/90 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-all border-2 border-white/40 shadow-2xl backdrop-blur-sm"
+              aria-label="Next poll"
             >
               ›
             </button>
           </>
         )}
 
-        {/* Poll Cards Grid */}
-        <div className={`
-          grid gap-4 transition-all duration-300
-          ${visiblePollIds.length === 1 ? 'grid-cols-1' : ''}
-          ${visiblePollIds.length === 2 ? 'grid-cols-1 md:grid-cols-2' : ''}
-          ${visiblePollIds.length >= 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : ''}
-        `}>
-          {visiblePollIds.map((pollId, index) => (
-            <PollCard 
-              key={`${pollId}-${currentIndex}-${index}`}
-              pollId={pollId}
-              isFeatured={index === 0 && currentIndex === 0}
-            />
-          ))}
+        <div className="flex-1 flex items-stretch px-10 min-h-0">
+          <div className="w-full h-full transform transition-all duration-300 flex">
+            <div className="flex-1 w-full h-full">
+              <PollCard 
+                key={`carousel-${currentPollId}-${currentIndex}`}
+                pollId={currentPollId}
+                isFeatured={true}
+                showAllOptions={true}
+                inCarousel={true}
+              />
+            </div>
+          </div>
         </div>
+
+        {pollIds.length > 1 && (
+          <div className="mt-4 pt-4 border-t border-white/20 flex-shrink-0">
+            <CarouselNavigation
+              totalSlides={pollIds.length}
+              currentSlide={currentIndex}
+              onDotClick={goToSlide}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Pagination Dots */}
-      {visiblePolls.length > 1 && (
-        <CarouselNavigation
-          totalSlides={visiblePolls.length}
-          currentSlide={currentIndex}
-          onDotClick={goToSlide}
-        />
-      )}
-
-      {/* Progress Bar */}
       {isAutoPlaying && (
-        <div className="mt-4 w-full bg-white/10 rounded-full h-1">
+        <div className="mt-3 w-full bg-white/10 rounded-full h-1 flex-shrink-0">
           <div 
             className="bg-gradient-to-r from-blue-400 to-purple-500 h-1 rounded-full transition-all duration-1000"
             style={{ 
-              width: `${((currentIndex + 1) / visiblePolls.length) * 100}%` 
+              width: `${((currentIndex + 1) / pollIds.length) * 100}%` 
             }}
           />
         </div>

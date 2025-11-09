@@ -17,3 +17,11 @@ const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 
 export { app }
+
+// Eksport kolekcji dla lepszej organizacji kodu
+export const COLLECTIONS = {
+  USERS: 'users',
+  GLOBAL_STATS: 'globalStats',
+  VOTES: 'votes',
+  LEADERBOARD_CACHE: 'leaderboardCache'
+} as const;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAppKit } from '../../auth'
+import { useUserProfile } from '../../../hooks/useUserProfile'
 import React from 'react'
 
 const AVAILABLE_AVATARS = ['🐶', '🐱', '🦊', '🐯', '🐻', '🐼', '🐨', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦅'];
@@ -18,22 +19,28 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   existingProfile 
 }) => {
   const { address } = useAppKit()
+  const { checkNicknameAvailability } = useUserProfile()
   const [nickname, setNickname] = useState(existingProfile?.nickname || '')
   const [selectedAvatar, setSelectedAvatar] = useState(existingProfile?.avatar || '🐶')
   const [isLoading, setIsLoading] = useState(false)
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(true)
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const [nicknameError, setNicknameError] = useState<string>('')
 
-  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       if (!existingProfile) {
         setNickname('')
         setSelectedAvatar('🐶')
+        setIsNicknameAvailable(true)
+        setNicknameError('')
       } else {
         setNickname(existingProfile.nickname)
         setSelectedAvatar(existingProfile.avatar)
+        setIsNicknameAvailable(true)
+        setNicknameError('')
       }
       
-      // Prevent body scroll
       document.body.style.overflow = 'hidden'
     }
 
@@ -42,11 +49,55 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     }
   }, [isOpen, existingProfile])
 
+  useEffect(() => {
+    if (!isOpen || existingProfile) return;
+
+    const checkNickname = async (nick: string) => {
+      if (nick.length < 3) {
+        setIsNicknameAvailable(true);
+        setNicknameError('');
+        return;
+      }
+      
+      setIsCheckingNickname(true);
+      setNicknameError('');
+      
+      try {
+        const available = await checkNicknameAvailability(nick);
+        setIsNicknameAvailable(available);
+        
+        if (!available) {
+          setNicknameError('This nickname is already taken. Please choose another one.');
+        }
+      } catch (error) {
+        setIsNicknameAvailable(true);
+      } finally {
+        setIsCheckingNickname(false);
+      }
+    };
+
+    if (nickname.length >= 3) {
+      const timer = setTimeout(() => {
+        checkNickname(nickname);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setIsNicknameAvailable(true);
+      setNicknameError('');
+    }
+  }, [nickname, isOpen, existingProfile, checkNicknameAvailability]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (nickname.length < 3) {
-      alert('Nickname must be at least 3 characters long')
+      setNicknameError('Nickname must be at least 3 characters long')
+      return
+    }
+
+    if (!isNicknameAvailable) {
+      setNicknameError('This nickname is already taken. Please choose another one.')
       return
     }
 
@@ -55,9 +106,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
       onProfileComplete({ nickname, avatar: selectedAvatar })
-    } catch (error) {
-      console.error('Profile registration failed:', error)
-      alert('Failed to register profile: ' + (error as Error).message)
+    } catch (error: any) {
+      if (error.message.includes('already taken')) {
+        setNicknameError(error.message)
+        setIsNicknameAvailable(false)
+      } else {
+        setNicknameError('Failed to register profile: ' + error.message)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -69,18 +124,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     }
   }
 
-  // CRITICAL FIX: Don't render if not open
   if (!isOpen) {
     return null
   }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-      {/* Modal Container */}
       <div className="relative w-full max-w-md max-h-[90vh] overflow-hidden">
-        {/* Modal Content */}
         <div className="bg-white rounded-2xl shadow-xl overflow-y-auto max-h-full">
-          {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
             <h2 className="text-xl font-bold text-gray-800">
               {existingProfile ? 'Edit Profile' : 'Complete Profile'}
@@ -94,8 +145,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {!existingProfile && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                 <div className="flex items-start gap-3">
@@ -110,7 +160,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             )}
             
-            {/* Avatar Selection */}
             <div>
               <h4 className="text-gray-800 font-semibold mb-4 text-center">Choose your avatar:</h4>
               <div className="grid grid-cols-8 gap-2 mb-4">
@@ -132,7 +181,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             </div>
             
-            {/* Nickname Input */}
             <div>
               <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-2">
                 Nickname *
@@ -150,18 +198,41 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 className={`w-full px-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   existingProfile 
                     ? 'bg-gray-100 border-gray-300 cursor-not-allowed' 
+                    : nicknameError 
+                    ? 'border-red-500 bg-white' 
                     : 'bg-white border-gray-300'
+                } ${
+                  isCheckingNickname ? 'animate-pulse' : ''
                 }`}
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {nickname.length}/20 characters
-                {existingProfile && (
-                  <span className="text-orange-500 ml-2">• Cannot be changed</span>
+              <div className="flex justify-between items-center mt-1">
+                <div className="text-xs text-gray-500">
+                  {nickname.length}/20 characters
+                  {existingProfile && (
+                    <span className="text-orange-500 ml-2">• Cannot be changed</span>
+                  )}
+                </div>
+                
+                {nickname.length >= 3 && !existingProfile && (
+                  <div className={`text-xs font-medium ${
+                    isCheckingNickname ? 'text-gray-500' :
+                    !isNicknameAvailable ? 'text-red-500' : 
+                    'text-green-500'
+                  }`}>
+                    {isCheckingNickname ? 'Checking...' : 
+                     !isNicknameAvailable ? '❌ Taken' : 
+                     '✅ Available'}
+                  </div>
                 )}
               </div>
+              
+              {nicknameError && (
+                <div className="text-red-500 text-xs mt-1 bg-red-50 border border-red-200 rounded-lg p-2">
+                  {nicknameError}
+                </div>
+              )}
             </div>
             
-            {/* Actions */}
             <div className="flex gap-3 pt-4">
               <button 
                 type="button"
@@ -173,7 +244,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </button>
               <button 
                 type="submit"
-                disabled={nickname.length < 3 || isLoading}
+                disabled={nickname.length < 3 || isLoading || !isNicknameAvailable || isCheckingNickname}
                 className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 transition-colors"
               >
                 {isLoading ? (
@@ -187,7 +258,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </button>
             </div>
 
-            {/* Footer */}
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-gray-500 text-sm">
                 {existingProfile 
@@ -196,7 +266,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 }
               </p>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

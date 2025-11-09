@@ -11,33 +11,40 @@ export const UserProfileComponent = () => {
   } = useUserProfile();
   
   const { 
-    useTotalPollsCreated
+    useTotalPollsCreated,
+    useUserBalance,
+    usePendingRewards,
+    claimCreatorReward
   } = useVoteContract();
 
   const [showStats, setShowStats] = useState(true);
-  const hasShownModalRef = useRef(false); // 🔥 FIX: Zapobiega wielokrotnemu wywołaniu
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimTxHash, setClaimTxHash] = useState<`0x${string}` | null>(null);
+  const hasShownModalRef = useRef(false);
 
   const { data: totalPollsCreated = 0n } = useTotalPollsCreated();
+  const { data: balance = 0n } = useUserBalance();
+  const { data: pendingRewards = 0n } = usePendingRewards();
 
-  // Auto-create anonymous profile for new users - NAPRAWIONE
   useEffect(() => {
-    // Sprawdzamy czy już pokazaliśmy modal dla tego użytkownika
     if (hasShownModalRef.current) {
       return;
     }
 
     if (isConnected && address && !userProfile && !isLoading) {
-      console.log('✅ Auto-creating anonymous profile for new user');
-      hasShownModalRef.current = true; // 🔥 ZAPISUJEMY że już pokazaliśmy
+      hasShownModalRef.current = true;
     }
-  }, [isConnected, address, userProfile, isLoading]); // 🔥 POPRAWNE ZALEŻNOŚCI
+  }, [isConnected, address, userProfile, isLoading]);
 
   const formatAddress = (addr: string | undefined) => {
     if (!addr) return 'Not connected';
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
-  // Safe profile data - zawsze ma wartość domyślną
+  const formatBalance = (value: bigint) => {
+    return (Number(value) / 1e18).toFixed(2);
+  };
+
   const safeProfile = userProfile || {
     nickname: 'Anonymous',
     avatar: '👤',
@@ -49,7 +56,28 @@ export const UserProfileComponent = () => {
     reputation: 0
   };
 
-  // NIE RENDERUJ jeśli wallet niepołączony
+  const progressToNextReward = Number(totalPollsCreated % 10n);
+  const nextRewardProgress = (progressToNextReward / 10) * 100;
+
+  const handleClaimReward = async () => {
+    try {
+      setShowClaimModal(true);
+      const hash = await claimCreatorReward();
+      
+      if (hash) {
+        setClaimTxHash(hash);
+      } else {
+        throw new Error('No transaction hash received');
+      }
+    } catch (error) {
+      setShowClaimModal(false);
+      setClaimTxHash(null);
+      window.dispatchEvent(new CustomEvent('showToast', { 
+        detail: { message: 'Błąd podczas odbierania nagrody', type: 'error' } 
+      }));
+    }
+  };
+
   if (!isConnected || !address) {
     return null;
   }
@@ -68,12 +96,8 @@ export const UserProfileComponent = () => {
     );
   }
 
-  const progressToNextReward = Number(totalPollsCreated % 10n);
-  const nextRewardProgress = (progressToNextReward / 10) * 100;
-
   return (
     <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-      {/* Profile Header */}
       <div className="flex items-center gap-4 mb-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg">
           {safeProfile.avatar}
@@ -89,9 +113,8 @@ export const UserProfileComponent = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
       {showStats && (
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-white/10 rounded-lg p-3 text-center">
             <div className="text-white font-bold text-lg">{Number(totalPollsCreated)}</div>
             <div className="text-white/80 text-xs">Polls Created</div>
@@ -100,10 +123,13 @@ export const UserProfileComponent = () => {
             <div className="text-white font-bold text-lg">{safeProfile.votesCast}</div>
             <div className="text-white/80 text-xs">Votes Cast</div>
           </div>
+          <div className="bg-white/10 rounded-lg p-3 text-center">
+            <div className="text-white font-bold text-lg">{formatBalance(balance)}</div>
+            <div className="text-white/80 text-xs">VOTE Tokens</div>
+          </div>
         </div>
       )}
 
-      {/* Reward Progress */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-white/80 text-sm font-medium">Reward Progress</span>
@@ -123,7 +149,25 @@ export const UserProfileComponent = () => {
         </p>
       </div>
 
-      {/* Quick Actions */}
+      {pendingRewards > 0n && (
+        <button 
+          onClick={handleClaimReward}
+          disabled={showClaimModal}
+          className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-700 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {showClaimModal ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Odbieranie...
+            </div>
+          ) : (
+            <>
+              🎁 Odbierz {formatBalance(pendingRewards)} VOTE
+            </>
+          )}
+        </button>
+      )}
+
       <div className="space-y-2">
         <button 
           onClick={() => setShowStats(!showStats)}

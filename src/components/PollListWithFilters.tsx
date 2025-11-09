@@ -17,7 +17,6 @@ const PollItem = ({ pollId, onVote }: { pollId: bigint; onVote: () => void }) =>
   useEffect(() => {
     const handleVoteCompleted = (event: CustomEvent) => {
       if (event.detail.pollId === pollId) {
-        console.log('🔄 Refreshing poll after voting...');
         refetch();
         refetchHasVoted();
         onVote();
@@ -45,7 +44,6 @@ const PollItem = ({ pollId, onVote }: { pollId: bigint; onVote: () => void }) =>
   }
 
   if (error || !pollInfo) {
-    console.error(`❌ Error loading poll ${pollId}:`, error);
     return (
       <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20">
         <p className="text-red-300">Error loading poll #{pollId.toString()}</p>
@@ -171,7 +169,6 @@ export const PollListWithFilters = () => {
 
   useEffect(() => {
     const handlePollCreated = () => {
-      console.log('🔄 Refreshing polls after creation...');
       refetchCount();
     };
 
@@ -181,7 +178,6 @@ export const PollListWithFilters = () => {
     };
   }, [refetchCount]);
 
-  // Generate poll data from pollCount
   useEffect(() => {
     if (pollCount > 0n) {
       const polls = [];
@@ -191,8 +187,6 @@ export const PollListWithFilters = () => {
         const pollId = BigInt(Number(pollCount) - 1 - i);
         polls.push({
           id: pollId,
-          // Note: In a real app, you'd fetch actual poll data here
-          // This is simplified for the example
           title: `Poll ${pollId}`,
           creator: '0x000...000',
           ended: false,
@@ -207,7 +201,6 @@ export const PollListWithFilters = () => {
   }, [pollCount]);
 
   const handleVote = () => {
-    // Refresh the poll list after voting
     refetchCount();
   };
 
@@ -251,7 +244,6 @@ export const PollListWithFilters = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Filters */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white">
@@ -263,9 +255,7 @@ export const PollListWithFilters = () => {
           </p>
         </div>
 
-        {/* Filter Controls */}
         <div className="flex flex-wrap gap-3">
-          {/* Filter Buttons */}
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => updateFilter('active', !filters.active)}
@@ -309,7 +299,6 @@ export const PollListWithFilters = () => {
             </button>
           </div>
 
-          {/* Sort Dropdown */}
           <select
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as any)}
@@ -322,7 +311,6 @@ export const PollListWithFilters = () => {
         </div>
       </div>
 
-      {/* Filter Status */}
       {hasActiveFilters && (
         <div className="bg-white/10 rounded-xl p-4 border border-white/20">
           <div className="flex items-center justify-between">
@@ -339,7 +327,6 @@ export const PollListWithFilters = () => {
         </div>
       )}
 
-      {/* No Results Message */}
       {visiblePollCount === 0 && pollCount > 0n && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔍</div>
@@ -354,7 +341,6 @@ export const PollListWithFilters = () => {
         </div>
       )}
 
-      {/* Polls Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {filteredPolls.map((poll) => (
           <PollItem 
@@ -365,7 +351,6 @@ export const PollListWithFilters = () => {
         ))}
       </div>
 
-      {/* Load More */}
       {filteredPolls.length < Number(pollCount) && (
         <div className="text-center pt-6">
           <div className="bg-white/10 rounded-xl p-6 border border-white/20">
